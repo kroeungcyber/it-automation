@@ -1,0 +1,31 @@
+# config/classification_rules.yaml
+# Tune patterns here — no code changes needed.
+# local rules are checked first; cloud second; no match = ambiguous (fail-safe → LOCAL)
+
+local:
+  - pattern: "\\b(reset|change|rotate|expire|update)\\b.{0,40}\\b(password|credential|cert|certificate|secret|api[_\\s]?key)\\b"
+    description: "Credential management"
+  - pattern: "\\b(ssh|sftp|scp|remote exec(ution)?)\\b"
+    description: "SSH / remote access"
+  - pattern: "\\b(backup|restore|snapshot)\\b.{0,30}\\b(job|run|trigger|start|server|volume|db|database|disk)\\b"
+    description: "Backup operations"
+  - pattern: "\\b(provision|deprovision|create|disable|enable|unlock|add|remove)\\b.{0,40}\\b(user|account|group member)\\b"
+    description: "User account management"
+  - pattern: "\\b(ad|ldap|active directory)\\b.{0,40}\\b(password|account|user|group|access)\\b"
+    description: "AD/LDAP operations"
+  - pattern: "\\baudit log\\b"
+    description: "Audit log access"
+
+cloud:
+  - pattern: "\\b(how (do|to|can)|what('s| is)|explain|guide|documentation|doc|tutorial|steps|instructions)\\b"
+    description: "Knowledge / documentation requests"
+  - pattern: "\\b(vpn|wi-fi|wifi|wireless|printer|outlook|email client)\\b.{0,40}\\b(setup|guide|help|issue|problem|error|not working|can't connect|configure)\\b"
+    description: "Common self-service IT help"
+  - pattern: "\\b(laptop|desktop|computer|device|machine)\\b.{0,40}\\b(can't|cannot|won't|not working|slow|issue|broken|error|freeze|crash)\\b"
+    description: "Device troubleshooting (non-exec)"
+  - pattern: "\\bonboarding\\b.{0,30}\\b(guide|checklist|process|steps|document|form)\\b"
+    description: "Onboarding documentation"
+  - pattern: "\\b(ticket status|my ticket|status of my|it request status)\\b"
+    description: "Ticket status queries"
+  - pattern: "\\bhow do i submit\\b"
+    description: "Request submission help"

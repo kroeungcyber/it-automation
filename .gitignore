@@ -1,2 +1,32 @@
 .superpowers/
 .worktrees/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Environment — NEVER commit real credentials
+.env
+
+# Editor
+.idea/
+.vscode/
+*.swp
