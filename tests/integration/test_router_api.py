@@ -50,6 +50,7 @@ def test_backup_routes_local(client):
         "source": "cli", "user_id": "admin", "org_role": "admin",
         "raw_input": "Run backup job on server-02",
     })
+    assert resp.status_code == 202
     assert resp.json()["route"] == "local"
     sensitive_q.enqueue.assert_called_once()
 
@@ -72,6 +73,8 @@ def test_wifi_issue_routes_cloud(client):
         "raw_input": "My laptop can't connect to WiFi",
     })
     assert resp.json()["route"] == "cloud"
+    cloud_q.enqueue.assert_called_once()
+    sensitive_q.enqueue.assert_not_called()
 
 
 def test_secret_payload_reroutes_local(client):
@@ -92,6 +95,8 @@ def test_ambiguous_input_failsafe_local(client):
         "raw_input": "Check server logs",
     })
     assert resp.json()["route"] == "local"
+    sensitive_q.enqueue.assert_called_once()
+    cloud_q.enqueue.assert_not_called()
 
 
 def test_get_task_after_create(client):
