@@ -31,4 +31,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     return app
 
 
+# Module-level app for uvicorn entry point (src.router.app:app).
+# Tests must import this module inside a patch context to avoid real infrastructure calls.
 app = create_app()

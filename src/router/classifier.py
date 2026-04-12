@@ -20,7 +20,7 @@ _INFO_VERBS = {"find", "show", "get", "explain", "describe", "list", "know", "un
 @dataclass
 class ClassificationResult:
     route: Literal["local", "cloud"]
-    method: Literal["rules", "spacy", "failsafe"]
+    method: Literal["rules", "spacy", "failsafe", "scanner"]
     confidence: float = 1.0
 
 
