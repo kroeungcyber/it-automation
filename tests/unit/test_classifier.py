@@ -72,3 +72,11 @@ def test_classification_result_has_confidence(classifier):
     result = classifier.classify("SSH into db-prod")
     assert isinstance(result.confidence, float)
     assert 0.0 <= result.confidence <= 1.0
+
+
+def test_spacy_routes_execution_verb_to_local(classifier):
+    """Verifies the spaCy local branch — root verb in _EXECUTION_VERBS."""
+    result = classifier.classify("run the migration script")
+    assert result.route == "local"
+    assert result.method == "spacy"
+    assert result.confidence == pytest.approx(0.7)

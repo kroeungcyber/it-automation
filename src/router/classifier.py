@@ -11,6 +11,9 @@ from src.router.rules import RuleEngine, RuleMatch
 log = structlog.get_logger()
 
 _EXECUTION_VERBS = {"execute", "run", "restart", "stop", "start", "kill", "deploy", "install"}
+# NOTE: "help" is deliberately absent. spaCy parses "help me with X" with root=help,
+# and "Help me with onboarding" must fail-safe to LOCAL (security boundary).
+# Do not add "help" here without updating the golden dataset in test_classifier.py.
 _INFO_VERBS = {"find", "show", "get", "explain", "describe", "list", "know", "understand"}
 
 
@@ -24,7 +27,7 @@ class ClassificationResult:
 class Classifier:
     def __init__(self, rule_engine: RuleEngine) -> None:
         self._rules = rule_engine
-        self._nlp = None  # lazy-loaded on first ambiguous request
+        self._nlp: object | None = None  # spacy.Language, lazy-loaded on first ambiguous request
 
     @classmethod
     def from_config(cls, rules_yaml_path: str) -> "Classifier":
