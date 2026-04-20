@@ -54,7 +54,7 @@ class AuditEventType(str, Enum):
 class ActionTarget(BaseModel):
     host: str = ""
     scope: Literal["single", "bulk"] = "single"
-    count: int = 1
+    count: int = Field(default=1, ge=1)
 
 
 class ActionRequester(BaseModel):

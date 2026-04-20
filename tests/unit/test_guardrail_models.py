@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from uuid import UUID
 from datetime import datetime
 from src.guardrail.models import (
@@ -64,7 +65,7 @@ def test_approval_decision_pending():
 
 def test_dry_run_preview_fields():
     preview = DryRunPreview(
-        action_plan_id="abc",
+        action_plan_id=str(uuid.uuid4()),
         agent="ssh_exec",
         would_affect=["server-01: restart nginx"],
         estimated_reversible=True,
@@ -77,7 +78,7 @@ def test_dry_run_preview_fields():
 
 def test_pipeline_result_success():
     result = PipelineResult(
-        action_plan_id="abc",
+        action_plan_id=str(uuid.uuid4()),
         outcome="success",
         risk_tier=RiskTier.LOW,
         is_reversible=True,
