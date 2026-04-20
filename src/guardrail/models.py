@@ -24,6 +24,30 @@ class RiskTier(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
 
+    def __lt__(self, other):
+        if not isinstance(other, RiskTier):
+            return NotImplemented
+        tier_order = {RiskTier.LOW: 0, RiskTier.MEDIUM: 1, RiskTier.HIGH: 2}
+        return tier_order[self] < tier_order[other]
+
+    def __le__(self, other):
+        if not isinstance(other, RiskTier):
+            return NotImplemented
+        tier_order = {RiskTier.LOW: 0, RiskTier.MEDIUM: 1, RiskTier.HIGH: 2}
+        return tier_order[self] <= tier_order[other]
+
+    def __gt__(self, other):
+        if not isinstance(other, RiskTier):
+            return NotImplemented
+        tier_order = {RiskTier.LOW: 0, RiskTier.MEDIUM: 1, RiskTier.HIGH: 2}
+        return tier_order[self] > tier_order[other]
+
+    def __ge__(self, other):
+        if not isinstance(other, RiskTier):
+            return NotImplemented
+        tier_order = {RiskTier.LOW: 0, RiskTier.MEDIUM: 1, RiskTier.HIGH: 2}
+        return tier_order[self] >= tier_order[other]
+
 
 class CircuitState(str, Enum):
     CLOSED = "closed"
