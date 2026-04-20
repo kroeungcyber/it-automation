@@ -24,29 +24,36 @@ class RiskTier(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
 
-    def __lt__(self, other):
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, RiskTier):
-            return NotImplemented
-        tier_order = {RiskTier.LOW: 0, RiskTier.MEDIUM: 1, RiskTier.HIGH: 2}
-        return tier_order[self] < tier_order[other]
+            raise TypeError(
+                f"'<' not supported between instances of 'RiskTier' and '{type(other).__name__}'"
+            )
+        return _TIER_ORDER[self] < _TIER_ORDER[other]
 
-    def __le__(self, other):
+    def __le__(self, other: object) -> bool:
         if not isinstance(other, RiskTier):
-            return NotImplemented
-        tier_order = {RiskTier.LOW: 0, RiskTier.MEDIUM: 1, RiskTier.HIGH: 2}
-        return tier_order[self] <= tier_order[other]
+            raise TypeError(
+                f"'<=' not supported between instances of 'RiskTier' and '{type(other).__name__}'"
+            )
+        return _TIER_ORDER[self] <= _TIER_ORDER[other]
 
-    def __gt__(self, other):
+    def __gt__(self, other: object) -> bool:
         if not isinstance(other, RiskTier):
-            return NotImplemented
-        tier_order = {RiskTier.LOW: 0, RiskTier.MEDIUM: 1, RiskTier.HIGH: 2}
-        return tier_order[self] > tier_order[other]
+            raise TypeError(
+                f"'>' not supported between instances of 'RiskTier' and '{type(other).__name__}'"
+            )
+        return _TIER_ORDER[self] > _TIER_ORDER[other]
 
-    def __ge__(self, other):
+    def __ge__(self, other: object) -> bool:
         if not isinstance(other, RiskTier):
-            return NotImplemented
-        tier_order = {RiskTier.LOW: 0, RiskTier.MEDIUM: 1, RiskTier.HIGH: 2}
-        return tier_order[self] >= tier_order[other]
+            raise TypeError(
+                f"'>=' not supported between instances of 'RiskTier' and '{type(other).__name__}'"
+            )
+        return _TIER_ORDER[self] >= _TIER_ORDER[other]
+
+
+_TIER_ORDER: dict[RiskTier, int] = {RiskTier.LOW: 0, RiskTier.MEDIUM: 1, RiskTier.HIGH: 2}
 
 
 class CircuitState(str, Enum):

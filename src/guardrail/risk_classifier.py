@@ -83,7 +83,7 @@ class RiskClassifier:
         if re.search(r"prod", plan.target.host, re.IGNORECASE):
             if tier == RiskTier.LOW:
                 tier = RiskTier.MEDIUM
-            reasons.append("prod host")
+                reasons.append("prod host")
 
         command = plan.parameters.get("command", "")
         if command and _DESTRUCTIVE_CMD_RE.search(command):
