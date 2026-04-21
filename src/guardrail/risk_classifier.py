@@ -7,6 +7,7 @@ from typing import Optional
 
 import yaml
 
+from src.guardrail._patterns import DESTRUCTIVE_CMD_RE as _DESTRUCTIVE_CMD_RE
 from src.guardrail.models import ActionPlan, ActionType, RiskTier
 
 
@@ -15,9 +16,6 @@ class ClassificationResult:
     tier: RiskTier
     method: str  # "rules" | "heuristics" | "default"
     reason: str
-
-
-from src.guardrail._patterns import DESTRUCTIVE_CMD_RE as _DESTRUCTIVE_CMD_RE
 
 
 def _escalate(tier: RiskTier) -> RiskTier:

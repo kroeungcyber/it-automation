@@ -34,7 +34,7 @@ class ApprovalGate:
 
     def record_decision(self, action_plan_id: str, decision: ApprovalDecision) -> None:
         key = f"{_KEY_PREFIX}{action_plan_id}"
-        self._redis.set(key, json.dumps({"decision": decision.value}))
+        self._redis.setex(key, 120, json.dumps({"decision": decision.value}))
 
     def poll(self, plan: ActionPlan) -> ApprovalDecision:
         """Block until decision received or window expires. Returns final decision."""

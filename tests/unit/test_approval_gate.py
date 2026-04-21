@@ -62,8 +62,8 @@ def test_record_decision_writes_to_redis():
     gate = ApprovalGate(redis, approval_window_seconds=30)
     plan = _plan()
     gate.record_decision(str(plan.id), ApprovalDecision.APPROVED)
-    redis.set.assert_called_once()
-    key, value = redis.set.call_args[0]
+    redis.setex.assert_called_once()
+    _key, _ttl, value = redis.setex.call_args[0]
     assert ApprovalDecision.APPROVED.value in value
 
 
