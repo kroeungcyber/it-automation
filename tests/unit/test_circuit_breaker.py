@@ -42,6 +42,12 @@ def test_is_open_returns_true_when_open():
     assert cb.is_open("ssh_exec") is True
 
 
+def test_is_open_returns_true_when_half_open():
+    redis = _make_redis({"state": CircuitState.HALF_OPEN.value, "failure_count": 0})
+    cb = CircuitBreaker(redis)
+    assert cb.is_open("ssh_exec") is True
+
+
 def test_is_open_returns_false_when_closed():
     cb = CircuitBreaker(_make_redis())
     assert cb.is_open("ssh_exec") is False
