@@ -94,3 +94,26 @@ def test_audit_logger_links_entries_via_prev_id(monkeypatch):
 
     assert written[1].prev_id == written[0].id
     assert written[2].prev_id == written[1].id
+
+
+def test_audit_logger_hash_chain_links_correctly():
+    logger = GuardRailAuditLogger(db_write_fn=None)
+    written: list[AuditRecord] = []
+    logger._db_write_fn = written.append
+
+    for _ in range(3):
+        logger.log(
+            action_plan_id="plan-1",
+            task_id="task-1",
+            event_type=AuditEventType.CLASSIFY,
+            risk_tier=RiskTier.LOW,
+            actor="system",
+            outcome="success",
+            detail={},
+        )
+
+    # Genesis: first record's prev_hash must be the zero sentinel
+    assert written[0].prev_hash == "0" * 64
+    # Chain: each record's prev_hash must equal the previous record's content_hash
+    assert written[1].prev_hash == written[0].content_hash
+    assert written[2].prev_hash == written[1].content_hash
