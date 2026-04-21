@@ -17,9 +17,7 @@ class ClassificationResult:
     reason: str
 
 
-_DESTRUCTIVE_CMD_RE = re.compile(
-    r"\b(rm|drop|truncate|format|mkfs|dd)\b", re.IGNORECASE
-)
+from src.guardrail._patterns import DESTRUCTIVE_CMD_RE as _DESTRUCTIVE_CMD_RE
 
 
 def _escalate(tier: RiskTier) -> RiskTier:

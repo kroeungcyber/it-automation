@@ -1,5 +1,5 @@
 import pytest
-from src.guardrail.models import ActionPlan, ActionTarget, ActionRequester, ActionType, DryRunPreview
+from src.guardrail.models import ActionPlan, ActionRequester, ActionType, DryRunPreview
 from src.guardrail.reversibility import ReversibilityChecker
 
 _REQUESTER = ActionRequester(user_id="U1", org_role="admin", task_source="cli")
@@ -69,5 +69,12 @@ def test_vault_read_is_reversible():
 def test_backup_trigger_respects_preview():
     checker = ReversibilityChecker()
     plan = _plan(ActionType.BACKUP_TRIGGER)
+    assert checker.is_reversible(plan, _preview(True)) is True
+    assert checker.is_reversible(plan, _preview(False)) is False
+
+
+def test_ldap_modify_respects_preview():
+    checker = ReversibilityChecker()
+    plan = _plan(ActionType.LDAP_MODIFY)
     assert checker.is_reversible(plan, _preview(True)) is True
     assert checker.is_reversible(plan, _preview(False)) is False

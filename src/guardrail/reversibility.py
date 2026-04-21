@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-import re
-
+from src.guardrail._patterns import DESTRUCTIVE_CMD_RE as _DESTRUCTIVE_CMD_FRAGMENTS
 from src.guardrail.models import ActionPlan, ActionType, DryRunPreview
 
 # These action types are structurally irreversible — agent preview is ignored
 _ALWAYS_IRREVERSIBLE = {ActionType.VAULT_WRITE, ActionType.AD_DEPROVISION}
-
-_DESTRUCTIVE_CMD_FRAGMENTS = re.compile(
-    r"\b(rm|drop|truncate|format|mkfs|dd)\b", re.IGNORECASE
-)
 
 
 class ReversibilityChecker:
