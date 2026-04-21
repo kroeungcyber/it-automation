@@ -26,6 +26,11 @@ class ExecutionAgent(ABC):
 
 class DryRunExecutor:
     def __init__(self, agents: dict[str, ExecutionAgent]) -> None:
+        for key, agent in agents.items():
+            if not isinstance(agent, ExecutionAgent):
+                raise TypeError(
+                    f"Agent for '{key}' must be an ExecutionAgent instance, got {type(agent).__name__}"
+                )
         self._agents = agents  # keyed by ActionType.value
 
     def run(self, plan: ActionPlan) -> DryRunPreview:

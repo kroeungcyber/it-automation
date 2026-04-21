@@ -1,5 +1,5 @@
 import pytest
-from src.guardrail.models import ActionPlan, ActionTarget, ActionRequester, ActionType, DryRunPreview
+from src.guardrail.models import ActionPlan, ActionRequester, ActionType, DryRunPreview
 from src.guardrail.dry_run import DryRunExecutor, ExecutionAgent
 
 _REQUESTER = ActionRequester(user_id="U1", org_role="admin", task_source="cli")
