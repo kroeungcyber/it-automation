@@ -35,12 +35,19 @@ class CircuitBreaker:
         )
 
     def is_open(self, agent_type: str) -> bool:
-        return self.get_state(agent_type).state == CircuitState.OPEN
+        state = self.get_state(agent_type).state
+        return state in (CircuitState.OPEN, CircuitState.HALF_OPEN)
 
     def record_failure(self, agent_type: str) -> CircuitStatus:
         key = f"{_KEY_PREFIX}{agent_type}"
         raw = self._redis.get(key)
         data = json.loads(raw) if raw else {"state": CircuitState.CLOSED.value, "failure_count": 0}
+        # HALF_OPEN + failure → immediately back to OPEN
+        if data["state"] == CircuitState.HALF_OPEN.value:
+            data["state"] = CircuitState.OPEN.value
+            data["failure_count"] = FAILURE_THRESHOLD
+            self._redis.setex(key, WINDOW_SECONDS, json.dumps(data))
+            return CircuitStatus(state=CircuitState.OPEN, failure_count=FAILURE_THRESHOLD, agent_type=agent_type)
         data["failure_count"] += 1
         if data["failure_count"] >= FAILURE_THRESHOLD:
             data["state"] = CircuitState.OPEN.value

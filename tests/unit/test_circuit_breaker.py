@@ -83,3 +83,13 @@ def test_get_all_states_returns_one_per_action_type():
     states = cb.get_all_states()
     from src.guardrail.models import ActionType
     assert len(states) == len(ActionType)
+
+
+def test_failure_in_half_open_reopens_circuit():
+    redis = MagicMock()
+    stored = {"state": CircuitState.HALF_OPEN.value, "failure_count": 0}
+    redis.get.return_value = json.dumps(stored).encode()
+    cb = CircuitBreaker(redis)
+    status = cb.record_failure("ssh_exec")
+    assert status.state == CircuitState.OPEN
+    assert status.failure_count == FAILURE_THRESHOLD
