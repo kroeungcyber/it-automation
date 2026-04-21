@@ -27,7 +27,7 @@ class EnforcementPipeline:
         circuit_breaker: CircuitBreaker,
         audit_logger: GuardRailAuditLogger,
         agents: dict[str, ExecutionAgent],
-        notify_fn: Callable,
+        notify_fn: Callable[[ActionPlan, DryRunPreview, bool], None],
     ) -> None:
         self._classifier = risk_classifier
         self._dry_run_executor = dry_run_executor
@@ -85,7 +85,10 @@ class EnforcementPipeline:
 
         # ⑤ Approval gate for HIGH risk
         if classification.tier == RiskTier.HIGH:
-            assert preview is not None
+            if preview is None:
+                raise RuntimeError(
+                    f"BUG: no dry-run preview for HIGH-risk plan {plan_id}"
+                )
             self._approval_gate.request_approval(
                 plan, preview, is_reversible, self._notify_fn
             )
@@ -157,7 +160,15 @@ class EnforcementPipeline:
                     rollback_success=None,
                 )
 
-    def _rollback(self, plan: ActionPlan, agent: ExecutionAgent, plan_id, task_id, tier, error_msg) -> bool:
+    def _rollback(
+        self,
+        plan: ActionPlan,
+        agent: ExecutionAgent,
+        plan_id: str,
+        task_id: str,
+        tier: RiskTier,
+        error_msg: str,
+    ) -> bool:
         try:
             success = agent.rollback(plan_id)
             self._audit_logger.log(
@@ -176,7 +187,7 @@ class EnforcementPipeline:
             )
             return False
 
-    def _escalate(self, plan_id, task_id, tier, error_msg) -> None:
+    def _escalate(self, plan_id: str, task_id: str, tier: RiskTier, error_msg: str) -> None:
         self._audit_logger.log(
             action_plan_id=plan_id, task_id=task_id,
             event_type=AuditEventType.ESCALATE, risk_tier=tier,

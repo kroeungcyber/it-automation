@@ -149,6 +149,17 @@ def test_medium_risk_no_approval_gate():
     pipeline._approval_gate.poll.assert_not_called()
 
 
+def test_medium_risk_reversible_failure_triggers_rollback():
+    pipeline, audit = _make_pipeline(
+        risk_tier=RiskTier.MEDIUM,
+        execute_raises=RuntimeError("ssh timeout"),
+    )
+    result = pipeline.run(_plan())
+    assert result.outcome == "failure"
+    assert result.dry_run_preview is not None  # dry-run ran before failure
+    assert result.rollback_success is True
+
+
 # ── HIGH risk path ───────────────────────────────────────────────────────────
 
 def test_high_risk_runs_dryrun_and_approval():
