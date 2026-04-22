@@ -72,6 +72,7 @@ def test_high_risk_denied(client):
         action_plan_id="plan-3", outcome="denied", risk_tier=RiskTier.HIGH, is_reversible=False,
     )
     resp = tc.post("/guardrail/authorize", json=_plan(action_type="vault_write", command=""))
+    assert resp.status_code == 200
     assert resp.json()["outcome"] == "denied"
 
 
@@ -81,6 +82,7 @@ def test_high_risk_timeout(client):
         action_plan_id="plan-4", outcome="timeout", risk_tier=RiskTier.HIGH, is_reversible=False,
     )
     resp = tc.post("/guardrail/authorize", json=_plan(action_type="vault_write", command=""))
+    assert resp.status_code == 200
     assert resp.json()["outcome"] == "timeout"
 
 
