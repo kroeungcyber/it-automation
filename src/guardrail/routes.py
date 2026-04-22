@@ -47,7 +47,7 @@ class ResetRequest(BaseModel):
 
 
 @router.post("/authorize")
-def authorize(plan: ActionPlan) -> Any:
+def authorize(plan: ActionPlan) -> JSONResponse:
     pipeline = get_pipeline()
     result: PipelineResult = pipeline.run(plan)
     body = AuthorizeResponse(

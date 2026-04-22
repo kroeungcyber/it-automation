@@ -27,12 +27,10 @@ def _noop_notify(plan, preview, is_reversible) -> None:
     )
 
 
-def build_pipeline(settings: Settings, redis: Redis) -> EnforcementPipeline:
+def build_pipeline(settings: Settings, redis: Redis, approval_gate: ApprovalGate, circuit_breaker: CircuitBreaker) -> EnforcementPipeline:
     classifier = RiskClassifier.from_yaml("config/guardrail_rules.yaml")
     dry_run_executor = DryRunExecutor(agents={})
     reversibility_checker = ReversibilityChecker()
-    approval_gate = ApprovalGate(redis)
-    circuit_breaker = CircuitBreaker(redis)
     audit_logger = GuardRailAuditLogger(db_write_fn=None)
     return EnforcementPipeline(
         risk_classifier=classifier,
@@ -51,11 +49,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         settings = Settings()
     configure_logging(settings.log_level)
     engine = get_engine(settings.database_url)
-    get_session_factory(engine)
+    get_session_factory(engine)  # side-effect: registers global session factory
     redis = Redis.from_url(settings.redis_url)
-    pipeline = build_pipeline(settings, redis)
     approval_gate = ApprovalGate(redis)
     circuit_breaker = CircuitBreaker(redis)
+    pipeline = build_pipeline(settings, redis, approval_gate, circuit_breaker)
     guardrail_routes._pipeline = pipeline
     guardrail_routes._approval_gate = approval_gate
     guardrail_routes._circuit_breaker = circuit_breaker
