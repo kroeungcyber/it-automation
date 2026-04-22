@@ -1,0 +1,35 @@
+# config/guardrail_rules.yaml
+# Tune risk tiers here — no code changes needed.
+# Rules are checked in order: high first, then medium, then low.
+# First match wins. If no rule matches, heuristics apply.
+
+high:
+  - action_type: ad_deprovision
+    scope: bulk
+    description: "Bulk account removal"
+  - action_type: ssh_exec
+    command_pattern: "\\b(rm|drop|truncate|format|mkfs|dd)\\b"
+    description: "Destructive filesystem/DB commands"
+  - action_type: vault_write
+    description: "Any credential write operation"
+
+medium:
+  - action_type: ssh_exec
+    target_pattern: "prod"
+    description: "Any SSH command on prod hosts"
+  - action_type: backup_trigger
+    description: "Backup/restore operations"
+  - action_type: ad_provision
+    description: "Single user provisioning"
+  - action_type: ad_deprovision
+    scope: single
+    description: "Single account deprovisioning"
+  - action_type: ldap_modify
+    description: "LDAP attribute modification"
+
+low:
+  - action_type: vault_read
+    description: "Credential read (execution-time only)"
+  - action_type: ssh_exec
+    target_pattern: "dev|staging|test"
+    description: "SSH on non-prod hosts"
