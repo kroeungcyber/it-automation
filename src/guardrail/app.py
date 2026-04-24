@@ -86,8 +86,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         sync_session_factory, redis, settings.jwt_secret, settings.jwt_expiry_seconds
     )
 
+    from src.guardrail import audit_read_routes
+    audit_read_routes.set_session_factory(sync_session_factory)
+
     app = FastAPI(title="GuardRail Gate", version="0.1.0")
     app.include_router(auth_routes.router)
     app.include_router(guardrail_routes.router)
+    app.include_router(audit_read_routes.router)
     return app
 # NO module-level app = create_app() — would run before test patches
