@@ -12,3 +12,5 @@ class Settings(BaseSettings):
     local_model: str = "gemma3:latest"
     cloud_model: str = "claude-sonnet-4-6"
     log_level: str = "INFO"
+    jwt_secret: str = "change-me-in-production"
+    jwt_expiry_seconds: int = 28800  # 8 hours
