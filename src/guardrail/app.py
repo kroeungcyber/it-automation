@@ -72,7 +72,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     approval_gate = ApprovalGate(redis)
     circuit_breaker = CircuitBreaker(redis)
 
-    pipeline = build_pipeline(settings, redis, approval_gate, circuit_breaker)
+    from src.guardrail.audit_orm import make_db_write_fn
+    db_write_fn = make_db_write_fn(sync_session_factory)
+
+    pipeline = build_pipeline(settings, redis, approval_gate, circuit_breaker, db_write_fn=db_write_fn)
 
     guardrail_routes._pipeline = pipeline
     guardrail_routes._approval_gate = approval_gate
