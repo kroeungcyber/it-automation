@@ -11,10 +11,14 @@ os.environ.setdefault("LOCAL_MODEL", "gemma3:latest")
 os.environ.setdefault("CLOUD_MODEL", "claude-sonnet-4-6")
 
 from fastapi.testclient import TestClient
+from src.auth.tokens import CurrentUser, Role
 from src.guardrail.models import (
     ActionRequester, ActionType, ApprovalDecision,
     PipelineResult, RiskTier,
 )
+
+_IT_ADMIN = CurrentUser(user_id="U1", username="alice", role=Role.IT_ADMIN, jti="jti-1", exp=9999999999)
+_SUPER_ADMIN = CurrentUser(user_id="U2", username="bob", role=Role.SUPER_ADMIN, jti="jti-2", exp=9999999999)
 
 
 def _plan_payload(**kwargs) -> dict:
@@ -46,9 +50,13 @@ def client():
     with patch("src.guardrail.app.build_pipeline", return_value=mock_pipeline), \
          patch("src.guardrail.app.get_engine"), \
          patch("src.guardrail.app.get_session_factory"), \
+         patch("src.guardrail.app.get_sync_engine"), \
+         patch("src.guardrail.app.get_sync_session_factory"), \
          patch("src.guardrail.app.Redis"):
         from src.guardrail.app import create_app
+        from src.auth.dependencies import _get_current_user
         app = create_app()
+        app.dependency_overrides[_get_current_user] = lambda: _IT_ADMIN
         yield TestClient(app), mock_pipeline
 
 
@@ -97,9 +105,9 @@ def test_circuit_breaker_status_endpoint(client):
         assert resp.status_code == 200
 
 
-def test_circuit_breaker_reset_endpoint(client):
+def test_circuit_breaker_reset_requires_super_admin(client):
     tc, _ = client
-    with patch("src.guardrail.routes.get_circuit_breaker") as mock_cb:
-        mock_cb.return_value.reset = MagicMock()
-        resp = tc.post("/guardrail/circuit-breaker/reset", json={"agent_type": "ssh_exec"})
-        assert resp.status_code == 200
+    # Fixture overrides _get_current_user to return IT_ADMIN.
+    # reset requires SUPER_ADMIN → should 403 before reaching the handler.
+    resp = tc.post("/guardrail/circuit-breaker/reset", json={"agent_type": "ssh_exec"})
+    assert resp.status_code == 403
