@@ -39,11 +39,17 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 
+# Pre-computed dummy hash so unknown usernames take the same time as wrong passwords.
+_DUMMY_HASH = "$2b$12$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+
+
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest) -> TokenResponse:
     with _session_factory() as session:
         user = session.query(UserORM).filter_by(username=body.username, is_active=True).first()
-    if user is None or not verify_password(body.password, user.hashed_password):
+    # Always run bcrypt to prevent user-enumeration via response-time differences.
+    check_hash = user.hashed_password if user is not None else _DUMMY_HASH
+    if not verify_password(body.password, check_hash) or user is None:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = issue_token(
         str(user.id), user.username, Role[user.role.upper()], _secret, _expiry_seconds
