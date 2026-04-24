@@ -12,9 +12,13 @@ os.environ.setdefault("OLLAMA_BASE_URL", "http://localhost:11434")
 os.environ.setdefault("LOCAL_MODEL", "gemma3:latest")
 os.environ.setdefault("CLOUD_MODEL", "claude-sonnet-4-6")
 
+from src.auth.tokens import CurrentUser, Role
 from src.guardrail.models import (
     ActionType, ApprovalDecision, CircuitState, PipelineResult, RiskTier,
 )
+
+_IT_ADMIN = CurrentUser(user_id="U1", username="alice", role=Role.IT_ADMIN, jti="jti-1", exp=9999999999)
+_SUPER_ADMIN = CurrentUser(user_id="U2", username="bob", role=Role.SUPER_ADMIN, jti="jti-2", exp=9999999999)
 
 
 def _plan(action_type="ssh_exec", host="server-dev-01", command="ls /tmp", scope="single", count=1) -> dict:
@@ -37,9 +41,13 @@ def client():
     with patch("src.guardrail.app.build_pipeline", return_value=mock_pipeline), \
          patch("src.guardrail.app.get_engine"), \
          patch("src.guardrail.app.get_session_factory"), \
+         patch("src.guardrail.app.get_sync_engine"), \
+         patch("src.guardrail.app.get_sync_session_factory"), \
          patch("src.guardrail.app.Redis"):
         from src.guardrail.app import create_app
+        from src.auth.dependencies import _get_current_user
         app = create_app()
+        app.dependency_overrides[_get_current_user] = lambda: _IT_ADMIN
         yield TestClient(app), mock_pipeline
 
 
@@ -162,12 +170,15 @@ def test_circuit_breaker_status(client):
 
 def test_circuit_breaker_reset(client):
     tc, _ = client
+    from src.auth.dependencies import _get_current_user
+    tc.app.dependency_overrides[_get_current_user] = lambda: _SUPER_ADMIN
     with patch("src.guardrail.routes.get_circuit_breaker") as mock_cb_fn:
         mock_cb = MagicMock()
         mock_cb_fn.return_value = mock_cb
         resp = tc.post("/guardrail/circuit-breaker/reset", json={"agent_type": "ssh_exec"})
         assert resp.status_code == 200
         mock_cb.reset.assert_called_once_with("ssh_exec")
+    tc.app.dependency_overrides[_get_current_user] = lambda: _IT_ADMIN
 
 
 def test_medium_risk_success(client):
